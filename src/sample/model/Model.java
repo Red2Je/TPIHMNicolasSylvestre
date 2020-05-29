@@ -18,34 +18,23 @@ import sample.controller.Controller;
 
 public class Model {
 
-	private String currentShape;
-	private Color shapeColor;
-	private static ArrayList<Shape> shapeList = new ArrayList<>();
-	private RadioButton currentSelectedButton;
-	private double xStart;
-	private double yStart;
-	private double xEnd;
-	private double yEnd;
-	public Model() {
+
+	private Color shapeColor;//la couleur de notre shape
+	private static ArrayList<Shape> shapeList = new ArrayList<>(); //la liste statique de toutes les shapes à dessiner
+	private double xStart;//la coordonnée en x de départ de la forme
+	private double yStart;//celle en y
+	private double xEnd;//la coordonnée de fin de la forme
+	private double yEnd;//celle en y
+	public Model() {//le constructeur qui configure la couleur
 		this.shapeColor = Color.WHITE;
 	}
 	
 	
-	public void changeSelectedRadioButton(RadioButton button) {
-		this.currentSelectedButton = button;
-		this.changeShape();
-	}
+
 	
-	public void changeShape() {
-		switch(currentSelectedButton.getText()) {
-		case "Ellipse" : this.currentShape = "Ellipse";break;
-		case "Rectangle" : this.currentShape = "Rectangle";break;
-		case "Line" : this.currentShape = "Line";break;
-		case "Select/Move" : this.currentShape = null;break;
-		}
-	}
+
 	
-	
+	//des getters et setters
 	public void setXStart(double xStart) {
 		this.xStart = xStart;
 	}
@@ -83,15 +72,13 @@ public class Model {
 		this.shapeColor = color;
 	}
 	
-	public String getCurrentButton() {
-		return(this.currentShape);
-	}
+
 	
-	
+	//la méthode d'ajout d'une shape dans la liste des shape à dessinner
 	public static void addShape(Shape shape) {
 		shapeList.add(shape);
 	}
-	
+	//la méthode de get des shapes dans la liste des shapes à dessiner
 	public static ArrayList<Shape> getShape() {
 		return(shapeList);
 	}

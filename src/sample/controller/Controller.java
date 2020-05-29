@@ -24,8 +24,8 @@ import sample.model.Model;
 
 public class Controller {
 
-	private Model myModel;
-	private RadioButton currentButton;
+	private Model myModel;//le modèle lié au controller
+	private RadioButton currentButton;//le bouton séléctionné par défaut
 
 	
 	@FXML
@@ -55,39 +55,35 @@ public class Controller {
 	@FXML
     private AnchorPane drawPane;
 	
-	private boolean isMouseClicked = false;
-	private Shape selectedShape;
-	private double xT;
+	private boolean isMouseClicked = false;// un indicateur de si un élément à été séléctionner
+	private Shape selectedShape;//la forme séléctionnée
+	private double xT;//l'endroit du clic où l'on a séléctionné la forme
 	private double yT;
-	private int index;
+	private int index;//l'index de la forme séléctionnée dans l'ArrayList de model : shapelist
 	public Controller() {
-		this.currentButton = SelectRadio;
+		this.currentButton = SelectRadio;//le bouton par défaut est celui de séléction
 		this.myModel = new Model();
 		
 	}
 
 	public void initialize() {
 		
-		//we handle the buttons events
+		//On s'occupe des événements sur les boutons : ils s'agit juste de hanger le bouton actif dans le modèle et dans le controlleur
 		EllipseRadio.setOnAction(event ->{
-			myModel.changeSelectedRadioButton(EllipseRadio);
-			this.currentButton = EllipseRadio;
+			this.currentButton = EllipseRadio;//et dans le controlleur
 		});
 		
 		RectangleRadio.setOnAction(event ->{
-			myModel.changeSelectedRadioButton(RectangleRadio);
 			this.currentButton = RectangleRadio;
 		});
 		LineRadio.setOnAction(event ->{
-			myModel.changeSelectedRadioButton(LineRadio);
 			this.currentButton = LineRadio;
 		});
 		SelectRadio.setOnAction(event ->{
-			myModel.changeSelectedRadioButton(SelectRadio);
 			this.currentButton = SelectRadio;
 		});
 		
-		//we handle the mouse events
+		//si on appuie sur la souris dans la zone de dessin, avec une séléction autre que le bouton de séléction, on définit le début d'une nouvelle forme
 		drawPane.setOnMousePressed(MouseEvent ->{
 			if(currentButton != SelectRadio) {
 				myModel.setXStart(MouseEvent.getX());
@@ -95,28 +91,28 @@ public class Controller {
 
 			
 		});
-		
+		//si le bouton a été enfoncé puis désenfoncer, on détermine si l'on doit sélectionner une forme ou dessiner une nouvelle shape, et on s'éxécute
 		drawPane.setOnMouseClicked(MouseEvent->{
-			if(currentButton == SelectRadio) {
-				Point2D currentPoint = new Point2D(MouseEvent.getX(),MouseEvent.getY());
-				Shape selected = null;
-				for(Shape s : Model.getShape()) {
+			if(currentButton == SelectRadio) {//cas ou la selection du bouton est "Select/Move"
+				Point2D currentPoint = new Point2D(MouseEvent.getX(),MouseEvent.getY());//on récupère les coordonnées de la souris, que l'on transforme en point (pas nécessaire, mais j'avais pas vu le polymorphisme de contains)
+				Shape selected = null;//si rien n'est séléctionné, selectedShape vaudra Null
+				for(Shape s : Model.getShape()) {//on parcours la liste des shapes et on détermine si une contient notre séléction
 					if(s.contains(currentPoint)) {
 						selected = s;
 					}
 				}
-				if(selected != null) {
-					if(!isMouseClicked) {
+				if(selected != null) {//si on en trouve une : 
+					if(!isMouseClicked) {//si on n'a pas encore de séléction:
 						this.selectedShape = selected;
 						this.isMouseClicked = true;
-						this.index = Model.getShape().indexOf(selected);
-						selected.getStrokeDashArray().add(2d);
-						this.xT = MouseEvent.getX();
+						this.index = Model.getShape().indexOf(selected);//on retrouve l'index de la shape que l'on a séléctionnée
+						selected.getStrokeDashArray().add(2d);//on met ses bords en pointillés
+						this.xT = MouseEvent.getX();//on définit là où l'on était quand on a cliqué dessus
 						this.yT = MouseEvent.getY();
 
-					}else {
-						this.selectedShape.getStrokeDashArray().add(0d);
-						this.selectedShape = null;
+					}else {//sinon on déselectionne
+						this.selectedShape.getStrokeDashArray().add(0d);//on remet les bords de la forme en trait pleins
+						this.selectedShape = null;//et on réinitialise toutes les variables
 						this.isMouseClicked = false;
 						this.index = 0;
 						this.xT = 0;
@@ -128,14 +124,14 @@ public class Controller {
 		});
 		
 		drawPane.setOnMouseDragged(MouseEvent ->{
-			switch(currentButton.getText()){
-			case "Line" : {
+			switch(currentButton.getText()){//on détermine sur quel bouton on est quand on drag la souris
+			case "Line" : {//si c'est le bouton ligne, on récupère le bout de la ligne
 				myModel.setXEnd(MouseEvent.getX());
 				myModel.setYEnd(MouseEvent.getY());
 				break;
 			}
 			case "Select/Move" :{
-				if(isMouseClicked) {
+				if(isMouseClicked) {//si cest le bouton select, et qu'une forme est séléctionnée , on translate cette forme avec la souris,à partir du point où l'on a cliqué sur la forme
 					this.selectedShape.setTranslateX(MouseEvent.getX()-this.xT);
 					this.selectedShape.setTranslateY(MouseEvent.getY()-this.yT);
 				}
@@ -144,7 +140,7 @@ public class Controller {
 				
 				
 			}
-			case"Ellipse" : {
+			case"Ellipse" : {//pour l'ellipse et le rectangle, on fait la même chose que la ligne
 				myModel.setXEnd(MouseEvent.getX());
 				myModel.setYEnd(MouseEvent.getY());
 				break;
@@ -160,10 +156,10 @@ public class Controller {
 		});
 		
 		drawPane.setOnMouseReleased(MouseEvent ->{
-			if(currentButton != SelectRadio) {
+			if(currentButton != SelectRadio) {//quand on relache le bouton de la souris, et que l'on est en train de dessiner une nouvelle forme, on valide cette nouvelle forme et elle apprait à l'écran
 				this.newShape(Color.BLACK, myModel.getColor());
 				this.draw();
-				myModel.setXEnd(0);
+				myModel.setXEnd(0);//on réinitialise toutes les variables du modèle
 				myModel.setYEnd(0);
 				myModel.setXStart(0);
 				myModel.setYStart(0);
@@ -172,9 +168,9 @@ public class Controller {
 		});
 		
 		
-		colorPicker.setOnAction(event ->{
+		colorPicker.setOnAction(event ->{//en fonction de l'action sur le color picker, on change la valeur dans le modèle
 			myModel.setColor(colorPicker.getValue());
-			if(isMouseClicked) {
+			if(isMouseClicked) {//si une forme est séléctionnée, on met à jour la couleur de cette dernière
 				this.updateSelectedShape(colorPicker.getValue());
 			}
 			
@@ -182,42 +178,43 @@ public class Controller {
 		});
 		
 		
-		//handle delete button
+		
 		deleteButton.setOnAction(event ->{
-			if(this.currentButton == SelectRadio) {
-				Model.getShape().remove(this.selectedShape);
-				this.isMouseClicked = false;
+			if(this.currentButton == SelectRadio) {//on vérifie que le bouton séléctionné est celui de séléction
+				Model.getShape().remove(this.selectedShape);//on enlève de la liste des shapes à dessiner la shape séléctionnée
+				this.isMouseClicked = false;//on remet tous les attributs à leurs états initiaux
 				this.index = 0;
 				this.xT = 0;
 				this.yT = 0;
-				this.draw();
+				this.draw();//on dessine la zone graphique pour acter la suppression de la shape
 			}
 		});
 		
-		//handle clone button
+
+		//Cet algorithme est mal fait selon moi car j'ai essayé de contourner le problème du diamant (je ne pouvais pas faire hériter une classe de Ellipse, Rectangle et line)
+		//une meilleur solution aurait surement été possible, mais le temps pour l'implémenter me manque (il aurait surement fallu changer la structure de donnée de Model)
 		cloneButton.setOnAction(event ->{
 			try {
-				String className = this.selectedShape.getClass().toString();
-				String arrayShape = Model.getShape().toString();
-				String[] splitted = arrayShape.split(",");
-				System.out.println(splitted[1]+"\n");
-				if(className.contains("Ellipse")) {
-					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;
-					Double y = Double.parseDouble(splitted[1].replaceAll("[^0-9]", ""))/10;
-					Double radiusX = Double.parseDouble(splitted[2].replaceAll("[^0-9]", ""))/10;
-					Double radiusY = Double.parseDouble(splitted[3].replaceAll("[^0-9]", ""))/10;
+				String className = this.selectedShape.getClass().toString();//on récupère le nom de la classe de la shape séléctionnée
+				String arrayShape = Model.getShape().toString();//on récupère l'array de shape de model sous forme de String[] pour s'affranchir du problème de typage
+				String[] splitted = arrayShape.split(",");//on fait des séparations au niveau des virgules 
+				if(className.contains("Ellipse")) {//on détecte la classe ellipse
+					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;//on récupere la valeur du x de l'ellipse qui nous interrèsse
+					Double y = Double.parseDouble(splitted[1].replaceAll("[^0-9]", ""))/10;//celle de y
+					Double radiusX = Double.parseDouble(splitted[2].replaceAll("[^0-9]", ""))/10;//on remplace la string par un double, et on divise le tout par 10, le parseur décalant la virgule, on obtient ainsi le rayon en x de l'ellipse
+					Double radiusY = Double.parseDouble(splitted[3].replaceAll("[^0-9]", ""))/10;//et celui en y
 					
-					Ellipse ell = new Ellipse();
+					Ellipse ell = new Ellipse();//on crée une nouvelle ellipse en la décalant de 10 dans les deux directions
 					ell.setCenterX(x+10);
 					ell.setCenterY(y+10);
 					ell.setRadiusX(radiusX);
 					ell.setRadiusY(radiusY);
 					ell.setFill(Color.WHITE);
-					Model.addShape(ell);
+					Model.addShape(ell);//on ajout l'ellipse aux shapes à dessiner
 					this.draw();
 				}
 				if(className.contains("Rectangle")) {
-					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;
+					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;//on proède de la même manière que pour l'ellipse
 					Double y = Double.parseDouble(splitted[1].replaceAll("[^0-9]", ""))/10;
 					Double width = Double.parseDouble(splitted[2].replaceAll("[^0-9]", ""))/10;
 					Double height = Double.parseDouble(splitted[3].replaceAll("[^0-9]", ""))/10;
@@ -232,7 +229,7 @@ public class Controller {
 					
 				}
 				if(className.contains("Line")) {
-					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;
+					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;//on se contente de récuperer les valeurs de début et de fin des lignes
 					Double y = Double.parseDouble(splitted[1].replaceAll("[^0-9]", ""))/10;
 					Double endX = Double.parseDouble(splitted[2].replaceAll("[^0-9]", ""))/10;
 					Double endY = Double.parseDouble(splitted[3].replaceAll("[^0-9]", ""))/10;
@@ -251,11 +248,11 @@ public class Controller {
 		
 	}
 	
-	public RadioButton getCurrentButton() {
+	public RadioButton getCurrentButton() {//un getter pour le bouton utlisé
 		return(this.currentButton);
 	}
 	
-	public void newShape(Color strokeColor, Color fillColor) {
+	public void newShape(Color strokeColor, Color fillColor) {//une méthode pour dessiner une forme en fonction du bouton séléctionné et de deux couleurs de remplissage et de contour
 
 		switch(currentButton.getText()){
 			case "Ellipse" :{
@@ -263,7 +260,7 @@ public class Controller {
 				
 				ell.setCenterX(myModel.getXStart());
 				ell.setCenterY(myModel.getYStart());
-				ell.setRadiusX(Math.min(Math.abs(myModel.getXEnd()-myModel.getXStart()),myModel.getXStart()));
+				ell.setRadiusX(Math.min(Math.abs(myModel.getXEnd()-myModel.getXStart()),myModel.getXStart()));//on calcul les deux rayons en fonctions du décalage de la souris par rapport au début du mouvement de drag
 				ell.setRadiusY(Math.min(Math.abs(myModel.getYEnd()-myModel.getYStart()),Math.abs(myModel.getYStart())));
 				ell.setFill(fillColor);
 				ell.setStroke(strokeColor);
@@ -278,7 +275,7 @@ public class Controller {
 				double ye = myModel.getYEnd();
 				double deltaX = xe-xs;
 				double deltaY = ye-ys;
-				if(deltaX<0){
+				if(deltaX<0){//on sépare les cas de la direction de déplacement de la souris et on calcule les x,y,Height et width en fonction du sens de déplacement de la souris
 					rect.setX(xe);
 					rect.setWidth(-deltaX);
 				}else {
@@ -315,13 +312,12 @@ public class Controller {
 
 
 	public void draw() {
-		drawPane.getChildren().clear();
-		System.out.println(Model.getShape().toString());
-		drawPane.getChildren().addAll(Model.getShape());
+		drawPane.getChildren().clear();//on vide tout les enfants de la zone de dessin pour éviter les dupliqués
+		drawPane.getChildren().addAll(Model.getShape());//on ajoute toutes les shapes de model à la zone de dessin
 		
 	}
 	
-	public void updateSelectedShape(Color color) {
+	public void updateSelectedShape(Color color) {//une méthode pour mettre à jour la couleur de la séléction
 		this.selectedShape.setFill(color);
 	}
 }

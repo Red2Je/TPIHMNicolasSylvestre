@@ -12,7 +12,7 @@ public class Main extends Application {
 	
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("FXMLTPNOTE.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("FXMLTPNOTE.fxml"));//on appelle le fxml loader sur le fxml obtenu avec scenebuilder
         primaryStage.setTitle("Dessin");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
