@@ -13,7 +13,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
@@ -56,6 +55,11 @@ public class Controller {
 	@FXML
     private AnchorPane drawPane;
 	
+	private boolean isMouseClicked = false;
+	private Shape selectedShape;
+	private double xT;
+	private double yT;
+	private int index;
 	public Controller() {
 		this.currentButton = SelectRadio;
 		this.myModel = new Model();
@@ -87,9 +91,13 @@ public class Controller {
 		drawPane.setOnMousePressed(MouseEvent ->{
 			if(currentButton != SelectRadio) {
 				myModel.setXStart(MouseEvent.getX());
-				myModel.setYStart(MouseEvent.getY());
-			}else {
-				
+				myModel.setYStart(MouseEvent.getY());}
+
+			
+		});
+		
+		drawPane.setOnMouseClicked(MouseEvent->{
+			if(currentButton == SelectRadio) {
 				Point2D currentPoint = new Point2D(MouseEvent.getX(),MouseEvent.getY());
 				Shape selected = null;
 				for(Shape s : Model.getShape()) {
@@ -97,13 +105,26 @@ public class Controller {
 						selected = s;
 					}
 				}
-				selected.getStrokeDashArray().add(2d);
-				selected.setFill(myModel.getColor());
-				selected.getStrokeDashArray().add(0d);
+				if(selected != null) {
+					if(!isMouseClicked) {
+						this.selectedShape = selected;
+						this.isMouseClicked = true;
+						this.index = Model.getShape().indexOf(selected);
+						selected.getStrokeDashArray().add(2d);
+						this.xT = MouseEvent.getX();
+						this.yT = MouseEvent.getY();
+
+					}else {
+						this.selectedShape.getStrokeDashArray().add(0d);
+						this.selectedShape = null;
+						this.isMouseClicked = false;
+						this.index = 0;
+						this.xT = 0;
+						this.yT = 0;
+					}
+				}
 				
 			}
-
-			
 		});
 		
 		drawPane.setOnMouseDragged(MouseEvent ->{
@@ -114,26 +135,21 @@ public class Controller {
 				break;
 			}
 			case "Select/Move" :{
-				Point2D currentPoint = new Point2D(MouseEvent.getX(),MouseEvent.getY());
-				Shape selected = null;
-				for(Shape s : Model.getShape()) {
-					if(s.contains(currentPoint)) {
-						selected = s;
-					}
+				if(isMouseClicked) {
+					this.selectedShape.setTranslateX(MouseEvent.getX()-this.xT);
+					this.selectedShape.setTranslateY(MouseEvent.getY()-this.yT);
 				}
-				/*int shapeIndex = Model.getShape().indexOf(selected);
-				Model.getShape().remove(selected);
 				
-				Class<? extends Shape> selectedClass = selected.getClass();*/
-				/*switch(selectedClass.toString()){
-				
-				
-				}*/
 				
 				
 				
 			}
-			default : {
+			case"Ellipse" : {
+				myModel.setXEnd(MouseEvent.getX());
+				myModel.setYEnd(MouseEvent.getY());
+				break;
+			}
+			case "Rectangle" : {
 				myModel.setXEnd(MouseEvent.getX());
 				myModel.setYEnd(MouseEvent.getY());
 				break;
@@ -151,8 +167,6 @@ public class Controller {
 				myModel.setYEnd(0);
 				myModel.setXStart(0);
 				myModel.setYStart(0);
-			}else {
-				
 			}
 
 		});
@@ -160,6 +174,79 @@ public class Controller {
 		
 		colorPicker.setOnAction(event ->{
 			myModel.setColor(colorPicker.getValue());
+			if(isMouseClicked) {
+				this.updateSelectedShape(colorPicker.getValue());
+			}
+			
+			
+		});
+		
+		
+		//handle delete button
+		deleteButton.setOnAction(event ->{
+			if(this.currentButton == SelectRadio) {
+				Model.getShape().remove(this.selectedShape);
+				this.isMouseClicked = false;
+				this.index = 0;
+				this.xT = 0;
+				this.yT = 0;
+				this.draw();
+			}
+		});
+		
+		//handle clone button
+		cloneButton.setOnAction(event ->{
+			try {
+				String className = this.selectedShape.getClass().toString();
+				String arrayShape = Model.getShape().toString();
+				String[] splitted = arrayShape.split(",");
+				System.out.println(splitted[1]+"\n");
+				if(className.contains("Ellipse")) {
+					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;
+					Double y = Double.parseDouble(splitted[1].replaceAll("[^0-9]", ""))/10;
+					Double radiusX = Double.parseDouble(splitted[2].replaceAll("[^0-9]", ""))/10;
+					Double radiusY = Double.parseDouble(splitted[3].replaceAll("[^0-9]", ""))/10;
+					
+					Ellipse ell = new Ellipse();
+					ell.setCenterX(x+10);
+					ell.setCenterY(y+10);
+					ell.setRadiusX(radiusX);
+					ell.setRadiusY(radiusY);
+					ell.setFill(Color.WHITE);
+					Model.addShape(ell);
+					this.draw();
+				}
+				if(className.contains("Rectangle")) {
+					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;
+					Double y = Double.parseDouble(splitted[1].replaceAll("[^0-9]", ""))/10;
+					Double width = Double.parseDouble(splitted[2].replaceAll("[^0-9]", ""))/10;
+					Double height = Double.parseDouble(splitted[3].replaceAll("[^0-9]", ""))/10;
+					Rectangle rect = new Rectangle();
+					rect.setX(x+10);
+					rect.setY(y+10);
+					rect.setWidth(width);
+					rect.setHeight(height);
+					rect.setFill(Color.WHITE);
+					Model.addShape(rect);
+					this.draw();
+					
+				}
+				if(className.contains("Line")) {
+					Double x = Double.parseDouble(splitted[0].replaceAll("[^0-9]", ""))/10;
+					Double y = Double.parseDouble(splitted[1].replaceAll("[^0-9]", ""))/10;
+					Double endX = Double.parseDouble(splitted[2].replaceAll("[^0-9]", ""))/10;
+					Double endY = Double.parseDouble(splitted[3].replaceAll("[^0-9]", ""))/10;
+					Line line = new Line(x+10,y+10,endX+10,endY+10);
+					line.setStroke(Color.WHITE);
+					Model.addShape(line);
+					this.draw();
+				}
+			}catch(Exception e) {
+			}
+			
+				
+			
+			
 		});
 		
 	}
@@ -232,5 +319,9 @@ public class Controller {
 		System.out.println(Model.getShape().toString());
 		drawPane.getChildren().addAll(Model.getShape());
 		
+	}
+	
+	public void updateSelectedShape(Color color) {
+		this.selectedShape.setFill(color);
 	}
 }
