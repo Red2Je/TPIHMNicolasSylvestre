@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+
+<BorderPane fx:controller="sample.controller.Controller" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+   <left>
+      <VBox prefHeight="400.0" prefWidth="140.0" BorderPane.alignment="CENTER">
+         <children>
+            <AnchorPane prefHeight="62.0" prefWidth="153.0" style="-fx-background-color: lightGrey;">
+               <children>
+                  <Label layoutX="46.0" layoutY="21.0" prefHeight="21.0" prefWidth="56.0" text="Options" textAlignment="CENTER" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="44.0" prefWidth="140.0">
+               <children>
+                  <RadioButton fx:id="SelectRadio" layoutX="15.0" layoutY="12.0" mnemonicParsing="false" selected="true" text="Select/Move">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="group1" />
+                     </toggleGroup>
+                  </RadioButton>
+                  <Separator layoutY="43.0" prefHeight="5.0" prefWidth="143.0" />
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="124.0" prefWidth="140.0">
+               <children>
+                  <RadioButton fx:id="EllipseRadio" layoutX="15.0" layoutY="14.0" mnemonicParsing="false" text="Ellipse" toggleGroup="$group1" />
+                  <RadioButton fx:id="RectangleRadio" layoutX="15.0" layoutY="52.0" mnemonicParsing="false" text="Rectangle" toggleGroup="$group1" />
+                  <RadioButton fx:id="LineRadio" layoutX="15.0" layoutY="89.0" mnemonicParsing="false" text="Line" toggleGroup="$group1" />
+               </children>
+            </AnchorPane>
+            <Separator prefWidth="200.0" />
+            <AnchorPane prefHeight="160.0" prefWidth="143.0">
+               <children>
+                  <ColorPicker fx:id="colorPicker" layoutX="4.0" layoutY="12.0" prefHeight="51.0" prefWidth="139.0" />
+                  <Separator layoutX="1.0" layoutY="69.0" prefHeight="2.0" prefWidth="146.0" />
+                  <Button fx:id="deleteButton" layoutX="3.0" layoutY="72.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="138.0" text="Delete" />
+                  <Button fx:id="cloneButton" layoutX="3.0" layoutY="115.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="138.0" text="Clone" />
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+   </left>
+   <center>
+      <HBox prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <Separator orientation="VERTICAL" prefHeight="400.0" prefWidth="14.0" />
+            <AnchorPane fx:id="drawPane" prefHeight="200.0" prefWidth="200.0" />
+         </children>
+      </HBox>
+   </center>
+</BorderPane>
